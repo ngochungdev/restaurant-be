@@ -1,9 +1,13 @@
 import { NestFactory } from '@nestjs/core';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
 import * as express from 'express';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { UsersService } from './modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
 
@@ -28,7 +32,10 @@ async function ensureAdminUser(app: any) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+  );
 
   const config = new DocumentBuilder()
     .setTitle('Restaurant API')
@@ -48,7 +55,7 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
 
   app.enableCors({
-    origin: 'http://localhost:5173', // frontend URL
+    origin: '*', // frontend URL
     credentials: true, // nếu dùng cookie/auth
   });
 

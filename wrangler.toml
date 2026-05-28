@@ -1,0 +1,12 @@
+name = "nestjs-api"
+main = "worker-cf.mjs"
+compatibility_date = "2026-05-28"
+
+compatibility_flags = ["nodejs_compat"]
+
+[alias]
+"@nestjs/websockets/socket-module" = "./stubs/empty"
+"@nestjs/microservices/microservices-module" = "./stubs/empty"
+"@nestjs/microservices" = "./stubs/empty"
+"class-transformer/storage" = "./stubs/class-transformer-storage"
+"expo-sqlite" = "./stubs/empty"
