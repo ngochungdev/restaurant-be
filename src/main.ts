@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import * as bodyParser from 'body-parser';
+import * as express from 'express';
 import * as bcrypt from 'bcrypt';
 import { UsersService } from './modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
@@ -38,8 +38,8 @@ async function bootstrap() {
     .build();
 
   // increase request body size limits to avoid PayloadTooLargeError
-  app.use(bodyParser.json({ limit: '10mb' }));
-  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
