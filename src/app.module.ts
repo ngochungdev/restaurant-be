@@ -20,15 +20,7 @@ import { UsersModule } from './modules/users/users.module';
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
 
-        host: config.get('DATABASE_HOST'),
-
-        port: Number(config.get('DATABASE_PORT')),
-
-        username: config.get('DATABASE_USER'),
-
-        password: config.get('DATABASE_PASSWORD'),
-
-        database: config.get('DATABASE_NAME'),
+        url: config.get('DATABASE_URL'),
 
         autoLoadEntities: true,
 
