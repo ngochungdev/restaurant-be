@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import './worker-polyfills';
 import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import { ValidationPipe } from '@nestjs/common';
