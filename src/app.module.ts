@@ -26,6 +26,7 @@ import { UsersModule } from './modules/users/users.module';
 
         synchronize: true,
 
+        // For development purposes only. In production, use proper SSL configuration.
         ssl: {
           rejectUnauthorized: false,
         },
