@@ -31,6 +31,15 @@
 $ pnpm install
 ```
 
+## Environment
+
+```bash
+BREVO_API_KEY=
+BREVO_SENDER_EMAIL=
+BREVO_SENDER_NAME=Restaurant
+RESERVATION_ADMIN_EMAIL=
+```
+
 ## Compile and run the project
 
 ```bash

@@ -7,6 +7,7 @@ import {
   Min,
   IsDateString,
   IsEnum,
+  IsEmail,
 } from 'class-validator';
 
 export enum ReservationStatus {
@@ -23,6 +24,14 @@ export class CreateReservationDto {
   @IsString()
   @IsNotEmpty()
   phone!: string;
+
+  @IsEmail()
+  @IsOptional()
+  customerEmail?: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
 
   @Type(() => Number)
   @IsInt()

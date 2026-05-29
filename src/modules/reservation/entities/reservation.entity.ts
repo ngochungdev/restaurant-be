@@ -12,6 +12,9 @@ export class Reservation {
   @Column()
   phone!: string;
 
+  @Column({ nullable: true })
+  customerEmail?: string;
+
   @Column('int')
   totalGuest!: number;
 
