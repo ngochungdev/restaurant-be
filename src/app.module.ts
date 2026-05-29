@@ -7,6 +7,7 @@ import { AboutUsModule } from './modules/about-us/about-us.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { CategoriesModule } from './modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -51,6 +52,8 @@ import { UsersModule } from './modules/users/users.module';
     AuthModule,
 
     UsersModule,
+
+    CategoriesModule,
   ],
 })
 export class AppModule {}

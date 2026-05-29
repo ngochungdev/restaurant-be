@@ -5,7 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
+import { Category } from '../../categories/entities/category.entity';
 
 @Entity('menus')
 export class Menu {
@@ -21,8 +24,12 @@ export class Menu {
   @Column()
   image!: string;
 
-  @Column()
-  category!: string;
+  @Column({ name: 'category_id', nullable: true })
+  category_id?: number;
+
+  @ManyToOne(() => Category, { nullable: true })
+  @JoinColumn({ name: 'category_id' })
+  category?: Category;
 
   @Column('text')
   description!: string;

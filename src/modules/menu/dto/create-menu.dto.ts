@@ -20,9 +20,9 @@ export class CreateMenuDto {
   @IsNotEmpty()
   image!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  category!: string;
+  @Type(() => Number)
+  @IsNumber()
+  category_id!: number;
 
   @IsString()
   @IsNotEmpty()

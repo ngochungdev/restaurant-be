@@ -33,12 +33,19 @@ export class MenuService {
   }
 
   findAll() {
-    return this.menuRepository.find();
+    return this.menuRepository.find({
+      relations: {
+        category: true,
+      },
+    });
   }
 
   findOne(id: number) {
     return this.menuRepository.findOne({
       where: { id },
+      relations: {
+        category: true,
+      },
     });
   }
 
