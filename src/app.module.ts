@@ -24,11 +24,18 @@ import { UsersModule } from './modules/users/users.module';
 
         autoLoadEntities: true,
 
-        synchronize: true,
+        // Never synchronize schema automatically in production — it queries
+        // the entire DB schema into memory on every startup (50-100 MB spike).
+        synchronize: process.env.NODE_ENV !== 'production',
 
-        // For development purposes only. In production, use proper SSL configuration.
         ssl: {
           rejectUnauthorized: false,
+        },
+
+        // 2 connections is enough for light traffic; keeps pool memory ~20 MB.
+        extra: {
+          max: 2,
+          idleTimeoutMillis: 30000,
         },
       }),
     }),

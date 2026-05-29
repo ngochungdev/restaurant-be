@@ -4,9 +4,7 @@ import {
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
 import { AppModule } from './app.module';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ValidationPipe } from '@nestjs/common';
-import * as express from 'express';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from './modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
@@ -32,39 +30,36 @@ async function ensureAdminUser(app: any) {
 }
 
 async function bootstrap() {
+  // Set Fastify body size limit directly — no need to import express.
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
-    new FastifyAdapter(),
+    new FastifyAdapter({ bodyLimit: 10 * 1024 * 1024 }),
   );
-
-  const config = new DocumentBuilder()
-    .setTitle('Restaurant API')
-    .setDescription('Auth + Menu + Reservation API')
-    .setVersion('1.0')
-    .addBearerAuth() // JWT auth
-    .build();
-
-  // increase request body size limits to avoid PayloadTooLargeError
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  await ensureAdminUser(app);
-
-  const document = SwaggerModule.createDocument(app, config);
-
   app.enableCors({
-    origin: '*', // frontend URL
-    credentials: true, // nếu dùng cookie/auth
+    origin: '*',
+    credentials: true,
   });
 
-  SwaggerModule.setup('api', app, document);
+  await ensureAdminUser(app);
+
+  // Only expose Swagger in non-production to avoid keeping the full UI in memory.
+  if (process.env.NODE_ENV !== 'production') {
+    const { SwaggerModule, DocumentBuilder } = await import('@nestjs/swagger');
+    const config = new DocumentBuilder()
+      .setTitle('Restaurant API')
+      .setDescription('Auth + Menu + Reservation API')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+  }
 
   const port = process.env.PORT || 3000;
-
   await app.listen(port, '0.0.0.0');
-
   console.log(`Server running on port ${port}`);
 }
 bootstrap();
