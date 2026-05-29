@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -44,7 +48,13 @@ export class MenuService {
     return this.findOne(id);
   }
 
-  remove(id: number) {
-    return this.menuRepository.delete(id);
+  async remove(id: number) {
+    const result = await this.menuRepository.softDelete(id);
+
+    if (!result.affected) {
+      throw new NotFoundException(`Menu #${id} not found`);
+    }
+
+    return { deleted: true };
   }
 }

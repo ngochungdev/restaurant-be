@@ -41,6 +41,8 @@ async function bootstrap() {
   app.enableCors({
     origin: '*',
     credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
 
   await ensureAdminUser(app);

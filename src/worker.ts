@@ -22,7 +22,12 @@ async function init(): Promise<void> {
   nestApp.use(express.json({ limit: '10mb' }));
   nestApp.use(express.urlencoded({ limit: '10mb', extended: true }));
   nestApp.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  nestApp.enableCors({ origin: '*', credentials: true });
+  nestApp.enableCors({
+    origin: '*',
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   const usersService = nestApp.get(UsersService);
   const configService = nestApp.get(ConfigService);
