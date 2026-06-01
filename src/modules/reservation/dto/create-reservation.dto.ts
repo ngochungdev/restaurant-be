@@ -45,6 +45,18 @@ export class CreateReservationDto {
   @IsOptional()
   note?: string;
 
+  @IsString()
+  @IsOptional()
+  language?: string;
+
+  @IsString()
+  @IsOptional()
+  lang?: string;
+
+  @IsString()
+  @IsOptional()
+  locale?: string;
+
   @IsEnum(ReservationStatus)
   @IsOptional()
   status?: ReservationStatus = ReservationStatus.PENDING;

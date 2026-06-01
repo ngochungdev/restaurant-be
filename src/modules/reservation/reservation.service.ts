@@ -9,6 +9,12 @@ import { UpdateReservationDto } from './dto/update-reservation.dto';
 import { Reservation } from './entities/reservation.entity';
 import { BrevoMailService } from '../../common/mail/brevo-mail.service';
 import { ConfigService } from '@nestjs/config';
+import {
+  DEFAULT_RESERVATION_LANGUAGE,
+  getReservationLanguage,
+  RESERVATION_EMAIL_FORMATS,
+  ReservationLanguage,
+} from './reservation-email.format';
 
 @Injectable()
 export class ReservationService {
@@ -20,11 +26,16 @@ export class ReservationService {
   ) {}
 
   async create(createReservationDto: CreateReservationDto) {
+    const { email, lang, locale, ...reservationFields } = createReservationDto;
     const reservation = this.reservationRepository.create({
-      ...createReservationDto,
-      customerEmail:
-        createReservationDto.customerEmail || createReservationDto.email,
+      ...reservationFields,
+      customerEmail: createReservationDto.customerEmail || email,
       reservationDate: new Date(createReservationDto.reservationDate),
+      language: this.resolveLanguage({
+        language: createReservationDto.language,
+        lang,
+        locale,
+      }),
     });
 
     const savedReservation = await this.reservationRepository.save(reservation);
@@ -52,12 +63,19 @@ export class ReservationService {
   }
 
   async update(id: number, updateReservationDto: UpdateReservationDto) {
+    const { email, lang, locale, ...reservationFields } = updateReservationDto;
     const payload = {
-      ...updateReservationDto,
-      customerEmail:
-        updateReservationDto.customerEmail || updateReservationDto.email,
+      ...reservationFields,
+      customerEmail: updateReservationDto.customerEmail || email,
       reservationDate: updateReservationDto.reservationDate
         ? new Date(updateReservationDto.reservationDate)
+        : undefined,
+      language: this.hasLanguageInput(updateReservationDto)
+        ? this.resolveLanguage({
+            language: updateReservationDto.language,
+            lang,
+            locale,
+          })
         : undefined,
     };
 
@@ -129,34 +147,32 @@ export class ReservationService {
   }
 
   private async sendReservationCreatedEmails(reservation: Reservation) {
+    const format = this.getEmailFormat(reservation);
+
     await Promise.all([
       this.sendCustomerEmail({
         reservation,
-        subject: 'Dat ban thanh cong',
-        title: 'Cam on ban da dat ban',
-        message:
-          'Chung toi da nhan thong tin dat ban cua ban va se xac nhan trong thoi gian som nhat.',
+        ...format.createdCustomer,
       }),
       this.sendAdminEmail(reservation),
     ]);
   }
 
   private sendReservationAcceptedEmail(reservation: Reservation) {
+    const format = this.getEmailFormat(reservation);
+
     return this.sendCustomerEmail({
       reservation,
-      subject: 'Dat ban da duoc xac nhan',
-      title: 'Dat ban cua ban da duoc xac nhan',
-      message: 'Cam on ban. Chung toi rat mong duoc don tiep ban.',
+      ...format.acceptedCustomer,
     });
   }
 
   private sendReservationRejectedEmail(reservation: Reservation) {
+    const format = this.getEmailFormat(reservation);
+
     return this.sendCustomerEmail({
       reservation,
-      subject: 'Dat ban chua the xac nhan',
-      title: 'Dat ban cua ban chua the xac nhan',
-      message:
-        'Rat tiec, nha hang chua the xac nhan lich dat ban nay. Vui long lien he nha hang de duoc ho tro them.',
+      ...format.rejectedCustomer,
     });
   }
 
@@ -197,18 +213,20 @@ export class ReservationService {
 
     if (!adminEmail) return Promise.resolve(false);
 
+    const format = this.getEmailFormat(reservation);
+
     return this.brevoMailService.sendMail({
       to: adminEmail,
-      subject: `Dat ban moi #${reservation.id}`,
+      subject: `${format.createdAdmin.subject} #${reservation.id}`,
       htmlContent: this.buildReservationEmailHtml({
         reservation,
-        title: 'Co dat ban moi',
-        message: 'Khach hang vua gui thong tin dat ban moi.',
+        title: format.createdAdmin.title,
+        message: format.createdAdmin.message,
       }),
       textContent: this.buildReservationEmailText({
         reservation,
-        title: 'Co dat ban moi',
-        message: 'Khach hang vua gui thong tin dat ban moi.',
+        title: format.createdAdmin.title,
+        message: format.createdAdmin.message,
       }),
     });
   }
@@ -222,15 +240,20 @@ export class ReservationService {
     title: string;
     message: string;
   }) {
+    const format = this.getEmailFormat(reservation);
+    const labels = format.labels;
     const rows = [
-      ['Ma dat ban', `#${reservation.id}`],
-      ['Ten khach', reservation.customerName],
-      ['So dien thoai', reservation.phone],
-      ['Email', reservation.customerEmail || ''],
-      ['So khach', String(reservation.totalGuest)],
-      ['Thoi gian', this.formatInTimeZone(reservation.reservationDate) || ''],
-      ['Trang thai', reservation.status],
-      ['Ghi chu', reservation.note || ''],
+      [labels.reservationCode, `#${reservation.id}`],
+      [labels.customerName, reservation.customerName],
+      [labels.phone, reservation.phone],
+      [labels.email, reservation.customerEmail || ''],
+      [labels.totalGuest, String(reservation.totalGuest)],
+      [
+        labels.reservationTime,
+        this.formatInTimeZone(reservation.reservationDate) || '',
+      ],
+      [labels.status, format.statuses[reservation.status]],
+      [labels.note, reservation.note || ''],
     ];
 
     return `
@@ -262,18 +285,48 @@ export class ReservationService {
     title: string;
     message: string;
   }) {
+    const format = this.getEmailFormat(reservation);
+    const labels = format.labels;
+
     return [
       title,
       message,
-      `Ma dat ban: #${reservation.id}`,
-      `Ten khach: ${reservation.customerName}`,
-      `So dien thoai: ${reservation.phone}`,
-      `Email: ${reservation.customerEmail || ''}`,
-      `So khach: ${reservation.totalGuest}`,
-      `Thoi gian: ${this.formatInTimeZone(reservation.reservationDate)}`,
-      `Trang thai: ${reservation.status}`,
-      `Ghi chu: ${reservation.note || ''}`,
+      `${labels.reservationCode}: #${reservation.id}`,
+      `${labels.customerName}: ${reservation.customerName}`,
+      `${labels.phone}: ${reservation.phone}`,
+      `${labels.email}: ${reservation.customerEmail || ''}`,
+      `${labels.totalGuest}: ${reservation.totalGuest}`,
+      `${labels.reservationTime}: ${this.formatInTimeZone(reservation.reservationDate)}`,
+      `${labels.status}: ${format.statuses[reservation.status]}`,
+      `${labels.note}: ${reservation.note || ''}`,
     ].join('\n');
+  }
+
+  private getEmailFormat(reservation: Reservation) {
+    const language = this.resolveLanguage(reservation);
+
+    return RESERVATION_EMAIL_FORMATS[language];
+  }
+
+  private resolveLanguage(input: {
+    language?: string;
+    lang?: string;
+    locale?: string;
+  }): ReservationLanguage {
+    return getReservationLanguage(
+      input.language ||
+        input.lang ||
+        input.locale ||
+        DEFAULT_RESERVATION_LANGUAGE,
+    );
+  }
+
+  private hasLanguageInput(input: {
+    language?: string;
+    lang?: string;
+    locale?: string;
+  }) {
+    return Boolean(input.language || input.lang || input.locale);
   }
 
   private escapeHtml(value: string) {

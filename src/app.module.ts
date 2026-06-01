@@ -29,9 +29,9 @@ import { CategoriesModule } from './modules/categories/categories.module';
         // the entire DB schema into memory on every startup (50-100 MB spike).
         synchronize: process.env.NODE_ENV !== 'production',
 
-        ssl: {
-          rejectUnauthorized: false,
-        },
+        // ssl: {
+        //   rejectUnauthorized: false,
+        // },
 
         // 2 connections is enough for light traffic; keeps pool memory ~20 MB.
         extra: {

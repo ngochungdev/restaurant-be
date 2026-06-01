@@ -29,6 +29,12 @@ export class Reservation {
 
   @Column({
     type: 'varchar',
+    default: 'vi',
+  })
+  language!: string;
+
+  @Column({
+    type: 'varchar',
     default: ReservationStatus.PENDING,
   })
   status!: ReservationStatus;
