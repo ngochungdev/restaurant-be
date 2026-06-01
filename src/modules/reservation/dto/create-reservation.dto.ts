@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   IsString,
   IsNotEmpty,
@@ -25,12 +25,14 @@ export class CreateReservationDto {
   @IsNotEmpty()
   phone!: string;
 
-  @IsEmail()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsOptional()
+  @IsEmail()
   customerEmail?: string;
 
-  @IsEmail()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsOptional()
+  @IsEmail()
   email?: string;
 
   @Type(() => Number)

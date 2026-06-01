@@ -8,6 +8,7 @@ import { ValidationPipe } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { UsersService } from './modules/users/users.service';
 import { ConfigService } from '@nestjs/config';
+import { ReservationSocketService } from './modules/reservation/reservation-socket.service';
 
 async function ensureAdminUser(app: any) {
   const usersService = app.get(UsersService);
@@ -46,6 +47,7 @@ async function bootstrap() {
   });
 
   await ensureAdminUser(app);
+  app.get(ReservationSocketService).attach(app.getHttpServer());
 
   // Only expose Swagger in non-production to avoid keeping the full UI in memory.
   if (process.env.NODE_ENV !== 'production') {

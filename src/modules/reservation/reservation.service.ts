@@ -15,6 +15,7 @@ import {
   RESERVATION_EMAIL_FORMATS,
   ReservationLanguage,
 } from './reservation-email.format';
+import { ReservationSocketService } from './reservation-socket.service';
 
 @Injectable()
 export class ReservationService {
@@ -23,6 +24,7 @@ export class ReservationService {
     private reservationRepository: Repository<Reservation>,
     private brevoMailService: BrevoMailService,
     private configService: ConfigService,
+    private reservationSocketService: ReservationSocketService,
   ) {}
 
   async create(createReservationDto: CreateReservationDto) {
@@ -40,8 +42,10 @@ export class ReservationService {
 
     const savedReservation = await this.reservationRepository.save(reservation);
     await this.sendReservationCreatedEmails(savedReservation);
+    const response = this.toResponse(savedReservation);
+    await this.notifyReservationsChanged('created', response);
 
-    return this.toResponse(savedReservation);
+    return response;
   }
 
   findAll(timezone?: string) {
@@ -81,7 +85,10 @@ export class ReservationService {
 
     await this.reservationRepository.update(id, payload);
 
-    return this.findOne(id);
+    const reservation = await this.findOne(id);
+    await this.notifyReservationsChanged('updated', reservation);
+
+    return reservation;
   }
 
   async remove(id: number) {
@@ -90,6 +97,8 @@ export class ReservationService {
     if (!result.affected) {
       throw new NotFoundException(`Reservation #${id} not found`);
     }
+
+    await this.notifyReservationsChanged('deleted', { id });
 
     return { deleted: true };
   }
@@ -105,8 +114,10 @@ export class ReservationService {
 
     const savedReservation = await this.reservationRepository.save(reservation);
     await this.sendReservationAcceptedEmail(savedReservation);
+    const response = this.toResponse(savedReservation);
+    await this.notifyReservationsChanged('accepted', response);
 
-    return this.toResponse(savedReservation);
+    return response;
   }
 
   async reject(id: number) {
@@ -120,8 +131,23 @@ export class ReservationService {
 
     const savedReservation = await this.reservationRepository.save(reservation);
     await this.sendReservationRejectedEmail(savedReservation);
+    const response = this.toResponse(savedReservation);
+    await this.notifyReservationsChanged('rejected', response);
 
-    return this.toResponse(savedReservation);
+    return response;
+  }
+
+  private async notifyReservationsChanged(
+    action: 'created' | 'updated' | 'accepted' | 'rejected' | 'deleted',
+    reservation?: Partial<Reservation> | { id: number },
+  ) {
+    const reservations = await this.findAll();
+
+    this.reservationSocketService.emitReservationsUpdated({
+      action,
+      reservation,
+      reservations,
+    });
   }
 
   private async findEntity(id: number) {
