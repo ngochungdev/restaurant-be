@@ -6,37 +6,59 @@ import {
   Patch,
   Param,
   Delete,
+  ParseIntPipe,
+  UseGuards,
 } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { CreateSettingDto } from './dto/create-setting.dto';
 import { UpdateSettingDto } from './dto/update-setting.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('api/v1/settings')
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   create(@Body() createSettingDto: CreateSettingDto) {
     return this.settingsService.create(createSettingDto);
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   findAll() {
     return this.settingsService.findAll();
   }
 
+  @Get('current')
+  findCurrent() {
+    return this.settingsService.findCurrent();
+  }
+
+  @Patch('current')
+  @UseGuards(JwtAuthGuard)
+  upsertCurrent(@Body() updateSettingDto: UpdateSettingDto) {
+    return this.settingsService.upsertCurrent(updateSettingDto);
+  }
+
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.settingsService.findOne(+id);
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.settingsService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSettingDto: UpdateSettingDto) {
-    return this.settingsService.update(+id, updateSettingDto);
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateSettingDto: UpdateSettingDto,
+  ) {
+    return this.settingsService.update(id, updateSettingDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.settingsService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  remove(@Param('id', ParseIntPipe) id: number) {
+    return this.settingsService.remove(id);
   }
 }

@@ -8,6 +8,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { CategoriesModule } from './modules/categories/categories.module';
+import { LeadsModule } from './modules/leads/leads.module';
 
 @Module({
   imports: [
@@ -55,6 +56,8 @@ import { CategoriesModule } from './modules/categories/categories.module';
     UsersModule,
 
     CategoriesModule,
+
+    LeadsModule,
   ],
 })
 export class AppModule {}

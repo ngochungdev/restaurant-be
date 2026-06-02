@@ -5,24 +5,36 @@ export class Settings {
   @PrimaryGeneratedColumn()
   id!: number;
 
-  @Column()
+  @Column({ default: 'Bella Restaurant' })
   restaurantName!: string;
 
-  @Column()
+  @Column({ nullable: true })
   logo!: string;
 
-  @Column()
+  @Column({ nullable: true })
+  heroImage!: string;
+
+  @Column({ nullable: true })
   address!: string;
 
-  @Column()
+  @Column({ nullable: true })
+  fullAddress!: string;
+
+  @Column({ nullable: true })
   hotline!: string;
 
-  @Column()
+  @Column({ nullable: true })
   openingHours!: string;
 
-  @Column()
+  @Column({ nullable: true })
   facebook!: string;
 
-  @Column()
+  @Column({ nullable: true })
   instagram!: string;
+
+  @Column({ nullable: true })
+  zalo!: string;
+
+  @Column({ nullable: true })
+  brandColor!: string;
 }
