@@ -8,33 +8,33 @@ export class Settings {
   @Column({ default: 'Bella Restaurant' })
   restaurantName!: string;
 
-  @Column({ nullable: true })
-  logo!: string;
+  @Column({ type: 'varchar', nullable: true })
+  logo!: string | null;
 
-  @Column({ nullable: true })
-  heroImage!: string;
+  @Column({ type: 'varchar', nullable: true })
+  heroImage!: string | null;
 
-  @Column({ nullable: true })
-  address!: string;
+  @Column({ type: 'varchar', nullable: true })
+  address!: string | null;
 
-  @Column({ nullable: true })
-  fullAddress!: string;
+  @Column({ type: 'varchar', nullable: true })
+  fullAddress!: string | null;
 
-  @Column({ nullable: true })
-  hotline!: string;
+  @Column({ type: 'varchar', nullable: true })
+  hotline!: string | null;
 
-  @Column({ nullable: true })
-  openingHours!: string;
+  @Column({ type: 'varchar', nullable: true })
+  openingHours!: string | null;
 
-  @Column({ nullable: true })
-  facebook!: string;
+  @Column({ type: 'varchar', nullable: true })
+  facebook!: string | null;
 
-  @Column({ nullable: true })
-  instagram!: string;
+  @Column({ type: 'varchar', nullable: true })
+  instagram!: string | null;
 
-  @Column({ nullable: true })
-  zalo!: string;
+  @Column({ type: 'varchar', nullable: true })
+  zalo!: string | null;
 
-  @Column({ nullable: true })
-  brandColor!: string;
+  @Column({ type: 'varchar', nullable: true })
+  brandColor!: string | null;
 }

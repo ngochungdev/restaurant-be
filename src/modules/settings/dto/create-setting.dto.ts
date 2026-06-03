@@ -1,4 +1,6 @@
+import { Transform } from 'class-transformer';
 import { IsOptional, IsString, IsUrl } from 'class-validator';
+import { blankToNull } from '../../../common/transformers/blank-to-null.transformer';
 
 export class CreateSettingDto {
   @IsString()
@@ -29,12 +31,14 @@ export class CreateSettingDto {
   openingHours?: string;
 
   @IsOptional()
+  @Transform(blankToNull)
   @IsUrl({ require_protocol: true })
-  facebook?: string;
+  facebook?: string | null;
 
   @IsOptional()
+  @Transform(blankToNull)
   @IsUrl({ require_protocol: true })
-  instagram?: string;
+  instagram?: string | null;
 
   @IsOptional()
   @IsString()
