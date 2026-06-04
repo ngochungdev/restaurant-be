@@ -11,6 +11,6 @@ export class AboutUs {
   @Column('text')
   description!: string;
 
-  @Column()
-  image!: string;
+  @Column({ type: 'varchar', nullable: true })
+  image!: string | null;
 }
