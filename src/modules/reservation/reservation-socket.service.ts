@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Server as HttpServer } from 'node:http';
 import { Server as SocketIoServer, Socket } from 'socket.io';
+import type { Lead } from '../leads/entities/lead.entity';
 import { Reservation } from './entities/reservation.entity';
 
 type ReservationSocketAction =
@@ -16,6 +17,24 @@ type ReservationsUpdatedPayload = {
   reservation?: Partial<Reservation> | { id: number };
   reservations: Array<Reservation & { reservationDateLocal?: string | null }>;
 };
+
+type AdminNotificationPayload =
+  | {
+      type: 'reservation';
+      action: 'created';
+      title: string;
+      message: string;
+      reservation: Partial<Reservation>;
+      createdAt: string;
+    }
+  | {
+      type: 'lead';
+      action: 'created';
+      title: string;
+      message: string;
+      lead: Partial<Lead>;
+      createdAt: string;
+    };
 
 @Injectable()
 export class ReservationSocketService {
@@ -46,6 +65,33 @@ export class ReservationSocketService {
     this.server?.emit(`reservation:${payload.action}`, {
       action: payload.action,
       reservationId: payload.reservation?.id,
+    });
+  }
+
+  emitNotification(payload: AdminNotificationPayload) {
+    this.server?.to('admins').emit('notifications:new', payload);
+  }
+
+  emitLeadCreated(lead: Lead) {
+    this.server?.to('admins').emit('leads:created', { lead });
+    this.emitNotification({
+      type: 'lead',
+      action: 'created',
+      title: 'New demo request',
+      message: `${lead.restaurantName} requested a demo`,
+      lead,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  emitReservationCreated(reservation: Partial<Reservation>) {
+    this.emitNotification({
+      type: 'reservation',
+      action: 'created',
+      title: 'New reservation request',
+      message: `${reservation.customerName || 'A customer'} requested a table`,
+      reservation,
+      createdAt: new Date().toISOString(),
     });
   }
 

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { BrevoMailService } from '../../common/mail/brevo-mail.service';
+import { ReservationSocketService } from '../reservation/reservation-socket.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { Lead } from './entities/lead.entity';
@@ -14,6 +15,7 @@ export class LeadsService {
     private readonly leadsRepository: Repository<Lead>,
     private readonly brevoMailService: BrevoMailService,
     private readonly configService: ConfigService,
+    private readonly reservationSocketService: ReservationSocketService,
   ) {}
 
   async create(createLeadDto: CreateLeadDto) {
@@ -21,6 +23,7 @@ export class LeadsService {
     const savedLead = await this.leadsRepository.save(lead);
 
     await this.sendLeadNotification(savedLead);
+    this.reservationSocketService.emitLeadCreated(savedLead);
 
     return savedLead;
   }

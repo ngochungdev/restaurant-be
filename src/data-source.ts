@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { AboutUs } from './modules/about-us/entities/about-us.entity';
+import { RefreshToken } from './modules/auth/entities/refresh-token.entity';
 import { User as AuthUser } from './modules/auth/entities/user.entity';
 import { Category } from './modules/categories/entities/category.entity';
 import { Lead } from './modules/leads/entities/lead.entity';
@@ -12,7 +13,17 @@ import { User } from './modules/users/entities/user.entity';
 export default new DataSource({
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [AboutUs, AuthUser, Category, Lead, Menu, Reservation, Settings, User],
+  entities: [
+    AboutUs,
+    AuthUser,
+    Category,
+    Lead,
+    Menu,
+    RefreshToken,
+    Reservation,
+    Settings,
+    User,
+  ],
   migrations: ['dist/migrations/*.js'],
   synchronize: false,
   extra: {

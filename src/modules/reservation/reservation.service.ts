@@ -44,6 +44,7 @@ export class ReservationService {
     await this.sendReservationCreatedEmails(savedReservation);
     const response = this.toResponse(savedReservation);
     await this.notifyReservationsChanged('created', response);
+    this.reservationSocketService.emitReservationCreated(response);
 
     return response;
   }
